@@ -1,0 +1,260 @@
+{
+  "updatedAt": "2026-03-30T09:32:26.125Z",
+  "createdAt": "2026-03-28T19:49:12.673Z",
+  "id": "GsBlGv2zTbcrhgCD",
+  "name": "AI Powered News Summarizer Project",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -224,
+        -32
+      ],
+      "id": "1c6a4669-fbaa-4bbf-8835-da6a383e6119",
+      "name": "When chat message received",
+      "webhookId": "731351d1-b792-45cf-94a0-b30713d6aa8d"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        160
+      ],
+      "id": "539c5304-a51e-4442-953a-f974792b76e1",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        112
+      ],
+      "id": "c585f94a-e911-4c66-b447-b62eead76d31",
+      "name": "sendMail",
+      "webhookId": "a73fdbea-1ebd-4122-995f-3283c0c668e8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Kavzzo6Ni5rELIUZ",
+          "name": "Gmail account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/top-headlines",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "category",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', `category of news headlines`, 'string') }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `keyword or phrase for searching`, 'string') }}"
+            },
+            {
+              "name": "pageSize",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `number of articles to fetch`, 'string') }}"
+            }
+          ]
+        },
+        "options": {},
+        "optimizeResponse": true,
+        "dataField": "articles"
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        176,
+        144
+      ],
+      "id": "48c462ea-4315-4e9e-881e-46d1c97ae766",
+      "name": "getNews",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "inMlga45L82fgOEC",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        128
+      ],
+      "id": "7f656575-ad7c-4dfe-b9b2-505331f43a49",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "0pM8GaWE5qkaQS3B",
+          "name": "Ollama account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistant. Please trigger getNews and get the category from the chat then format it in a good way then send it as a post on linked in account"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -32,
+        -32
+      ],
+      "id": "a1c9d5d9-6d81-4c9a-8cb4-28c96039c0b4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "person": "08OWUVGe_P",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        368,
+        -32
+      ],
+      "id": "77790d74-7795-4bae-8fe6-35f81dd486cd",
+      "name": "Create a post",
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "TXj3XutCzUvKI30J",
+          "name": "LinkedIn account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sendMail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getNews": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create a post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "b72376da-a6ef-4220-a5b3-c520ab9adb73",
+  "activeVersionId": null,
+  "versionCounter": 128,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-28T19:49:12.687Z",
+      "createdAt": "2026-03-28T19:49:12.687Z",
+      "role": "workflow:owner",
+      "workflowId": "GsBlGv2zTbcrhgCD",
+      "projectId": "OP09F7UrV1sIkWDp",
+      "project": {
+        "updatedAt": "2026-03-11T16:11:46.937Z",
+        "createdAt": "2026-03-11T16:11:04.865Z",
+        "id": "OP09F7UrV1sIkWDp",
+        "name": "Ahmed Abdelbary <ahmedelamry12580@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "7970e442-f6bb-4afa-83cf-6b12a3ce9ad7"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
